@@ -5,6 +5,7 @@
 ## To install dependencies for the backend:
 
 cd backend
+poetry config virtualenvs.in-project true
 poetry env use python3.13
 poetry install
 

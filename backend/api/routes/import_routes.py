@@ -19,6 +19,12 @@ from services.import_service import ImportService
 from enums.import_types import ImportType
 
 #
+#   Constants
+#
+
+FILE_SIZE = 16 * 1024 * 1024
+
+#
 #   Routes
 #
 
@@ -46,7 +52,7 @@ async def import_collection(
         )
 
     # Validating the file size
-    if file.size and file.size >= 16 * 1024 * 1024:
+    if file.size and file.size >= FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="File too large, 16MB max.",

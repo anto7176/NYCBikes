@@ -2,15 +2,17 @@
 #   Imports
 #
 
-from datetime import datetime
+import json
 import uuid
 import io
 import pandas as pd # type: ignore
 import geopandas as gpd # type: ignore
 
+from datetime import datetime
 from typing import Any
 from pymongo import AsyncMongoClient
 from fastapi.datastructures import UploadFile
+from pymongo.errors import BulkWriteError
 
 # Perso
 
@@ -26,7 +28,7 @@ class ImportService:
     """
 
     def __init__(self, db: AsyncMongoClient[Any]):
-        self._db = db
+        self._db = db["nycbikes"]
 
     async def import_collection(self, import_type: ImportType, file: UploadFile):
         """
@@ -36,14 +38,15 @@ class ImportService:
         # Reading the file
         content = await file.read()
         df = pd.read_csv(io.BytesIO(content))
+        if df.empty:
+            raise ValueError("No data found in the file !")
         await file.close()
 
         # Importing the collection
         if import_type == ImportType.ACCIDENTS:
             await self.import_accidents(df)
         elif import_type == ImportType.BIKES_ITINERARY:
-            # await self.import_bikes_itinerary(file)
-            pass
+            await self.import_bikes_itinerary(df)
 
     async def import_accidents(self, df: pd.DataFrame):
         """
@@ -69,7 +72,7 @@ class ImportService:
 
         # Concatenating the db accidents and the bikes ones
         # from the same period and ignoring the duplicates.
-        # But it ignores the by comparing the values and not the
+        # But it ignores by comparing the values and not the
         # ids as it is new ids for the new possibly new accidents.
         df_acc = pd.concat([db_df_acc, df], ignore_index=True)
         df_acc.drop_duplicates(
@@ -77,21 +80,30 @@ class ImportService:
             inplace=True
         )
 
-        gdf_acc, db_gdf_bi = self._transform_acc_bi_to_gdf(df_acc, db_df_bi)
+        if not db_df_bi.empty:
+            gdf_acc, db_gdf_bi = self._transform_acc_bi_to_gdf(df_acc, db_df_bi)
 
-        # Getting the new bikes itinerary df by calculating
-        # the matching between the accidents and the bikes itinerary
-        df_bi = self._match_accidents(db_gdf_bi, gdf_acc, 100)
+            # Getting the new bikes itinerary df by calculating
+            # the matching between the accidents and the bikes itinerary
+            df_bi = self._match_accidents(db_gdf_bi, gdf_acc, 100)
 
-        # Inserting the new bikes itinerary into the database
-        await self._db["bikes_itinerary"].insert_many(
-            df_bi.to_dict(orient="records") # type: ignore
-        )
+            # Inserting the new bikes itinerary into the database
+            await self._db["bikes_itinerary"].insert_many(
+                df_bi.to_dict(orient="records"), # type: ignore
+                ordered=False
+            )
 
         # Inserting the new accidents into the database
-        await self._db["accidents"].insert_many(
-            df_acc.to_dict(orient="records") # type: ignore
-        )
+        try:
+            await self._db["accidents"].insert_many(df_acc.to_dict(orient="records"), ordered=False)
+        except BulkWriteError as e:
+            # 1) résumé rapide
+            print(e.details.get("nInserted"), "insérés")
+            print(len(e.details.get("writeErrors", [])), "erreurs")
+
+            # 2) un exemple d’erreur
+            first = e.details["writeErrors"]
+            print(json.dumps(first, indent=2, default=str))
 
     async def import_bikes_itinerary(self, df: pd.DataFrame):
         """
@@ -125,20 +137,22 @@ class ImportService:
             inplace=True
         )
 
-        gdf_bi, db_gdf_bi = self._transform_acc_bi_to_gdf(df_bi, db_df_acc)
+        gdb_df_acc, db_gdf_bi = self._transform_acc_bi_to_gdf(db_df_acc, df_bi)
 
         # Getting the new bikes itinerary df by calculating
         # the matching between the accidents and the bikes itinerary
-        df_bi = self._match_accidents(gdf_bi, db_gdf_bi, 100)
+        df_bi = self._match_accidents(gdb_df_acc, db_gdf_bi, 100)
 
         # Inserting the new bikes itinerary into the database
         await self._db["bikes_itinerary"].insert_many(
-            df_bi.to_dict(orient="records") # type: ignore
+            df_bi.to_dict(orient="records"), # type: ignore
+            ordered=False
         )
 
         # Inserting the new accidents into the database
         await self._db["accidents"].insert_many(
-            df_acc.to_dict(orient="records") # type: ignore
+            df_acc.to_dict(orient="records"), # type: ignore
+            ordered=False
         )
 
     def _clean_bikes_itinerary(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -165,11 +179,11 @@ class ImportService:
 
         # Fixing the datetime columns
         df["started_at"] = pd.to_datetime( # type: ignore
-            df["started_at"] # type: ignore
+            df["started_at"], # type: ignore
             format="%Y-%m-%d %H:%M:%S"
         )
-        df["ended_at"] = pd.to_datetime(df["ended_at"] # type: ignore
-            df["ended_at"] # type: ignore
+        df["ended_at"] = pd.to_datetime( # type: ignore
+            df["ended_at"], # type: ignore
             format="%Y-%m-%d %H:%M:%S"
         )
 
@@ -202,8 +216,8 @@ class ImportService:
         gdf_bi = gpd.GeoDataFrame(
             df_bi,
             geometry=gpd.points_from_xy(
-                db_df_bi["start_lng"], # type: ignore
-                db_df_bi["start_lat"], # type: ignore
+                df_bi["start_lng"], # type: ignore
+                df_bi["start_lat"], # type: ignore
             ),
             crs="EPSG:4326"
         ).to_crs("EPSG:32618")
@@ -279,7 +293,7 @@ class ImportService:
 
         start_date = df["DATETIME"].min() # type: ignore
         start_date = start_date.to_period("M").start_time # type: ignore
-        end_date = df["DATETIME"].max().dt + pd.offsets.MonthEnd(0) # type: ignore
+        end_date = df["DATETIME"].max() + pd.offsets.MonthEnd(0) # type: ignore
 
         return start_date, end_date # type: ignore
 
@@ -301,7 +315,7 @@ class ImportService:
                     "$lte": end_date
                 }
             }
-        )
+        ).to_list()
 
         db_accidents = await self._db["accidents"].find( # type: ignore
             {
@@ -310,18 +324,18 @@ class ImportService:
                     "$lte": end_date
                 }
             }
-        )
+        ).to_list()
 
-        db_bikes_itinerary = pd.DataFrame(list[Any](db_bikes_itinerary))
-        db_accidents = pd.DataFrame(list[Any](db_accidents))
+        db_bikes_itinerary = pd.DataFrame(db_bikes_itinerary) # type: ignore
+        db_accidents = pd.DataFrame(db_accidents) # type: ignore
 
         return db_bikes_itinerary, db_accidents # type: ignore
 
 
     def _match_accidents(
         self,
-        gdf_bi: gpd.GeoDataFrame,
         gdf_acc: gpd.GeoDataFrame,
+        gdf_bi: gpd.GeoDataFrame,
         radius: float
     ) -> pd.DataFrame:
         """

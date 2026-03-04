@@ -4,7 +4,6 @@
 
 from typing import Any
 
-
 from pymongo import AsyncMongoClient
 
 # Perso
@@ -20,4 +19,7 @@ settings = get_settings()
 def get_db() -> AsyncMongoClient[Any]:
     """Return a MongoDB client."""
 
-    return AsyncMongoClient[Any](settings.DB_STRING)
+    return AsyncMongoClient[Any](
+        settings.DB_STRING,
+        uuidRepresentation="standard",
+    )
