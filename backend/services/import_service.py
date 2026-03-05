@@ -2,14 +2,13 @@
 #   Imports
 #
 
-import json
 import uuid
 import io
 import pandas as pd # type: ignore
 import geopandas as gpd # type: ignore
 
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 from pymongo import AsyncMongoClient
 from fastapi.datastructures import UploadFile
 from pymongo.errors import BulkWriteError
@@ -17,6 +16,12 @@ from pymongo.errors import BulkWriteError
 # Perso
 
 from enums.import_types import ImportType
+
+#
+#   Constants
+#
+
+BATCH_SIZE = 10000
 
 #
 #   Services
@@ -88,22 +93,10 @@ class ImportService:
             df_bi = self._match_accidents(db_gdf_bi, gdf_acc, 100)
 
             # Inserting the new bikes itinerary into the database
-            await self._db["bikes_itinerary"].insert_many(
-                df_bi.to_dict(orient="records"), # type: ignore
-                ordered=False
-            )
+            await self._batch_insert(df_bi, "bikes_itinerary")
 
         # Inserting the new accidents into the database
-        try:
-            await self._db["accidents"].insert_many(df_acc.to_dict(orient="records"), ordered=False)
-        except BulkWriteError as e:
-            # 1) résumé rapide
-            print(e.details.get("nInserted"), "insérés")
-            print(len(e.details.get("writeErrors", [])), "erreurs")
-
-            # 2) un exemple d’erreur
-            first = e.details["writeErrors"]
-            print(json.dumps(first, indent=2, default=str))
+        await self._batch_insert(df_acc, "accidents")
 
     async def import_bikes_itinerary(self, df: pd.DataFrame):
         """
@@ -137,24 +130,50 @@ class ImportService:
             inplace=True
         )
 
-        gdb_df_acc, db_gdf_bi = self._transform_acc_bi_to_gdf(db_df_acc, df_bi)
+        if not db_df_acc.empty:
+            gdb_df_acc, db_gdf_bi = self._transform_acc_bi_to_gdf(db_df_acc, df_bi)
 
-        # Getting the new bikes itinerary df by calculating
-        # the matching between the accidents and the bikes itinerary
-        df_bi = self._match_accidents(gdb_df_acc, db_gdf_bi, 100)
+            # Getting the new bikes itinerary df by calculating
+            # the matching between the accidents and the bikes itinerary
+            df_bi = self._match_accidents(gdb_df_acc, db_gdf_bi, 100)
+
+            # Inserting the new accidents into the database
+            await self._batch_insert(db_df_acc, "accidents")
 
         # Inserting the new bikes itinerary into the database
-        await self._db["bikes_itinerary"].insert_many(
-            df_bi.to_dict(orient="records"), # type: ignore
-            ordered=False
-        )
+        await self._batch_insert(df_bi, "bikes_itinerary")
 
-        # Inserting the new accidents into the database
-        await self._db["accidents"].insert_many(
-            df_acc.to_dict(orient="records"), # type: ignore
-            ordered=False
-        )
+    async def _batch_insert(
+        self,
+        df: pd.DataFrame,
+        coll_name: str
+    ) -> None:
+        """
+            Batch inserts the rows in the database
 
+            Params:
+                - df: The df to insert
+                - coll_name : The name of the collection to insert in.
+        """
+        
+        df = df.drop(columns=["_id"], errors="ignore") # type: ignore
+        df_dict = df.to_dict(orient="records") # type: ignore
+
+        batch: List[Any] = []
+        for i in range(len(df)):
+            batch.append(df_dict[i])
+
+            if len(batch) >= BATCH_SIZE or i >= len(df) - 1:
+                try:
+                    await self._db[coll_name].insert_many(
+                        batch,
+                        ordered=False
+                    )
+                except BulkWriteError:
+                    pass
+
+                batch = []
+            
     def _clean_bikes_itinerary(self, df: pd.DataFrame) -> pd.DataFrame:
         """
             Cleaning the bikes itinerary DataFrame.
@@ -180,11 +199,11 @@ class ImportService:
         # Fixing the datetime columns
         df["started_at"] = pd.to_datetime( # type: ignore
             df["started_at"], # type: ignore
-            format="%Y-%m-%d %H:%M:%S"
+            format="%Y-%m-%d %H:%M:%S.%f"
         )
         df["ended_at"] = pd.to_datetime( # type: ignore
             df["ended_at"], # type: ignore
-            format="%Y-%m-%d %H:%M:%S"
+            format="%Y-%m-%d %H:%M:%S.%f"
         )
 
         df.infer_objects()
@@ -238,7 +257,7 @@ class ImportService:
         ], inplace=True)
 
         # Converting the datetime column
-        df["DATETIME"] = pd.to_datetime( # type: ignore
+        df["started_at"] = pd.to_datetime( # type: ignore
             df["CRASH DATE"] + " " + df["CRASH TIME"], # type: ignore
             format="%m/%d/%Y %H:%M",
             errors="coerce"
@@ -291,9 +310,9 @@ class ImportService:
             between them.
         """
 
-        start_date = df["DATETIME"].min() # type: ignore
+        start_date = df["started_at"].min() # type: ignore
         start_date = start_date.to_period("M").start_time # type: ignore
-        end_date = df["DATETIME"].max() + pd.offsets.MonthEnd(0) # type: ignore
+        end_date = df["started_at"].max() + pd.offsets.MonthEnd(0) # type: ignore
 
         return start_date, end_date # type: ignore
 
@@ -308,23 +327,16 @@ class ImportService:
             and accidents for the given period.
         """
 
-        db_bikes_itinerary = await self._db["bikes_itinerary"].find( # type: ignore
-            {
-                "started_at": {
-                    "$gte": start_date,
-                    "$lte": end_date
-                }
+        QUERY = {
+            "started_at": {
+                "$gte": start_date,
+                "$lte": end_date
             }
-        ).to_list()
+        }
 
-        db_accidents = await self._db["accidents"].find( # type: ignore
-            {
-                "DATETIME": {
-                    "$gte": start_date,
-                    "$lte": end_date
-                }
-            }
-        ).to_list()
+        db_bikes_itinerary = await self._db["bikes_itinerary"].find(QUERY).to_list()
+
+        db_accidents = await self._db["accidents"].find(QUERY).to_list()
 
         db_bikes_itinerary = pd.DataFrame(db_bikes_itinerary) # type: ignore
         db_accidents = pd.DataFrame(db_accidents) # type: ignore
