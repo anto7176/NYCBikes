@@ -22,6 +22,8 @@ from enums.import_types import ImportType
 #
 
 BATCH_SIZE = 10000
+BIKES_ITINERARY_DIVIDER_RATIO = 30
+MATCHING_ACCIDENTS_RADIUS = 100
 
 #
 #   Services
@@ -90,7 +92,7 @@ class ImportService:
 
             # Getting the new bikes itinerary df by calculating
             # the matching between the accidents and the bikes itinerary
-            df_bi = self._match_accidents(db_gdf_bi, gdf_acc, 100)
+            df_bi = self._match_accidents(gdf_acc, db_gdf_bi, MATCHING_ACCIDENTS_RADIUS)
 
             # Inserting the new bikes itinerary into the database
             await self._batch_insert(df_bi, "bikes_itinerary")
@@ -112,6 +114,9 @@ class ImportService:
         # Adding the UUID to the DataFrame
         df["bi_id"] = [uuid.uuid4() for _ in range(len(df))]
 
+        # Adding the accident_ids column
+        df["accident_ids"] = [[] for _ in range(len(df))]
+
         sdate, edate = self._get_monthly_period(df)
 
         # Getting from the database the bikes itinerary
@@ -126,7 +131,7 @@ class ImportService:
         # ids as it is new ids for the new possibly new bikes itinerary.
         df_bi = pd.concat([db_df_bi, df], ignore_index=True)
         df_bi.drop_duplicates(
-            subset=[col for col in df_bi.columns if col != "bi_id"], # type: ignore
+            subset=[col for col in df_bi.columns if col != "bi_id" and col != "accident_ids"], # type: ignore
             inplace=True
         )
 
@@ -135,7 +140,7 @@ class ImportService:
 
             # Getting the new bikes itinerary df by calculating
             # the matching between the accidents and the bikes itinerary
-            df_bi = self._match_accidents(gdb_df_acc, db_gdf_bi, 100)
+            df_bi = self._match_accidents(gdb_df_acc, db_gdf_bi, MATCHING_ACCIDENTS_RADIUS)
 
             # Inserting the new accidents into the database
             await self._batch_insert(db_df_acc, "accidents")
@@ -210,6 +215,9 @@ class ImportService:
 
         # Fixing index
         df.reset_index(drop=True, inplace=True)
+
+        # Keeping only some random rows to limit the size of the dataset
+        df = df.sample(n=len(df) // BIKES_ITINERARY_DIVIDER_RATIO) # type: ignore
 
         return df
 
@@ -386,5 +394,8 @@ class ImportService:
             on="bi_id",
             how="left",
         )
+
+        # Dropping the geometry columns
+        df_bi.drop(columns=["geometry", "itinerary_corridor"], inplace=True) # type: ignore
 
         return df_bi
