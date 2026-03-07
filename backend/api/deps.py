@@ -10,6 +10,7 @@ from pymongo import AsyncMongoClient
 
 from db.session import get_db
 from services.import_service import ImportService
+from services.matching_service import MatchingService
 
 #
 #   Dependencies
@@ -28,3 +29,10 @@ async def get_import_service(
     """Return an ImportService instance."""
 
     return ImportService(db)
+
+async def get_matching_service(
+    db: AsyncMongoClient[Any] = Depends(get_db_client)
+) -> MatchingService:
+    """Return a MatchingService instance."""
+
+    return MatchingService(db)

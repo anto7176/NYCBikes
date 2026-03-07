@@ -14,8 +14,9 @@ from fastapi.exceptions import HTTPException
 
 # Perso
 
-from api.deps import get_import_service
+from api.deps import get_import_service, get_matching_service
 from services.import_service import ImportService
+from services.matching_service import MatchingService
 from enums.import_types import ImportType
 
 #
@@ -41,7 +42,8 @@ router = APIRouter(prefix="/import")
 async def import_collection(
     file: UploadFile = File(...),
     import_service: ImportService = Depends(get_import_service),
-    import_type: ImportType = Path(..., description="The type of the import")
+    import_type: ImportType = Path(..., description="The type of the import"),
+    matching_service: MatchingService = Depends(get_matching_service)
 ):
 
     # Validating the file type 
@@ -58,7 +60,9 @@ async def import_collection(
             detail="File too large, 1GB max.",
         )
 
-    await import_service.import_collection(import_type, file)
+    start_date, end_date = await import_service.import_collection(import_type, file)
+
+    await matching_service.match_acc_bi_by_month(start_date, end_date)
 
     return None
 

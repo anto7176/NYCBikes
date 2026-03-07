@@ -32,25 +32,23 @@ coll_bi.drop_indexes()
 
 coll_bi.create_index({
     "started_at": ASCENDING,
-    "ended_at": ASCENDING,
-    "start_lat": ASCENDING,
-    "start_lng": ASCENDING,
-    "end_lat": ASCENDING,
-    "end_lng": ASCENDING,
-}, unique=True)
+})
 
 coll_bi.create_index({
-    "started_at": ASCENDING,
+    "buffer": "2dsphere",
+})
+
+coll_bi.create_index({
+    "_id": ASCENDING,
 })
 
 coll_acc.drop_indexes()
 
 coll_acc.create_index({
-    "DATETIME": ASCENDING,
-    "LONGITUDE": ASCENDING,
-    "LATITUDE": ASCENDING,
+    "started_at": ASCENDING,
+    "position": "2dsphere",
 }, unique=True)
 
 coll_acc.create_index({
-    "DATETIME": ASCENDING,
+    "started_at": ASCENDING,
 })

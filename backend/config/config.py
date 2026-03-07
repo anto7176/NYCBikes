@@ -76,6 +76,10 @@ class Settings(BaseSettings):
         min_length=1,
         description="The string to connect to the database"
     )
+    DB_NAME: str = Field(
+        default="nycbikes",
+        description="The name of the database"
+    )
 
     #
     #   Config
