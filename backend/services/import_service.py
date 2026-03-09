@@ -99,7 +99,7 @@ class ImportService:
 
         gdf["position"] = gdf["geometry"].apply(mapping) # type: ignore
 
-        gdf.drop(columns=["geometry", "LATITUDE", "LONGITUDE"], inplace=True) # type: ignore
+        gdf.drop(columns=["geometry"], inplace=True) # type: ignore
 
         # Inserting the new accidents into the database
         await self._batch_insert(gdf, "accidents")
@@ -135,7 +135,7 @@ class ImportService:
 
         gdf["buffer"] = gdf["geometry"].apply(mapping) # type: ignore
 
-        gdf.drop(columns=["geometry", "start_lng", "start_lat", "end_lng", "end_lat"], inplace=True) # type: ignore
+        gdf.drop(columns=["geometry"], inplace=True) # type: ignore
 
         # Inserting the new bikes itinerary into the database
         await self._batch_insert(gdf, "bikes_itinerary")
