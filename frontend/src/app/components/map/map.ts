@@ -14,8 +14,8 @@ export class Map implements OnInit {
   //   Constants
   //
   
-  private static readonly CITY_POINT: L.LatLngTuple = [47.321, 5.041];
-  private static readonly CITY_ORIGINAL_ZOOM = 13;
+  private static readonly CITY_POINT: L.LatLngTuple = [40.71, -74];
+  private static readonly CITY_ORIGINAL_ZOOM = 11;
 
   private static readonly HEAT_MAP_MAX_INTENSITY = 1;
   private static readonly POINTS_RADIUS = 0.001;
@@ -50,7 +50,7 @@ export class Map implements OnInit {
   
   ngOnInit(): void {
     // Initialize the map to the city point
-    this.map = L.map('map').setView(Map.CITY_POINT, Map.CITY_ORIGINAL_ZOOM);
+    this.map = L.map("map").setView(Map.CITY_POINT, Map.CITY_ORIGINAL_ZOOM);
 
     // Settings the default map http location and default zoom
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

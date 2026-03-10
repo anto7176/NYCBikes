@@ -215,7 +215,7 @@ class ImportService:
         df.reset_index(drop=True, inplace=True)
 
         # Keeping only some random rows to limit the size of the dataset
-        df = df.sample(n=len(df) // BIKES_ITINERARY_DIVIDER_RATIO) # type: ignore
+        df = df.sample(n=len(df) // BIKES_ITINERARY_DIVIDER_RATIO, random_state=42) # type: ignore
 
         return df
 

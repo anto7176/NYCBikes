@@ -86,13 +86,11 @@
               />
             </div>
           }
-      }
-
-      @if (uploadedFiles?.length > 0) {
+      } @else if (uploadedFiles?.length > 0) {
         <h5>Completed</h5>
 
         @for (file of uploadedFiles; track file.name; let i = $index) {
-            <div class="uz-files">
+            <div class="uz-file">
               <span>{{ file.name }}</span>
               <div>{{ formatSize(file.size) }}</div>
               <p-badge value="Completed" severity="success" />

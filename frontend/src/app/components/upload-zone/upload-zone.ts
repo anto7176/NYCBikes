@@ -81,6 +81,7 @@ export class UploadZone {
 
     this.totalSize.set(0);
     this.isUploading.set(false);
+    this.files.set([]);
   }
 
   public onSelectedFiles(event: any) {
