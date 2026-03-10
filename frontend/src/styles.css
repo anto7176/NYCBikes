@@ -21,3 +21,42 @@ html, body {
     border: 1px solid var(--accent-color);
     border-radius: 6px;
 }
+
+/* Heatmap Legend */
+
+.heatmap-legend {
+    background: var(--primary-color);
+    padding: 6px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    font: 12px/1.2 Arial, sans-serif;
+}
+  
+.heatmap-legend .legend-title {
+    margin-top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.heatmap-legend .legend-scale {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.heatmap-legend .legend-bar {
+    width: 120px;
+    height: 10px;
+    background: linear-gradient(
+        to right,
+        #00ff4c 0%,
+        #ffff00 50%,
+        #ff0000 100%
+    );
+    border-radius: 3px;
+}

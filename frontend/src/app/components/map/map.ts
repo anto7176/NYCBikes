@@ -1,6 +1,7 @@
 import { Component, input, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import { Itinerary } from '../../models/itinerary';
+import { HeatmapPoint } from '../../models/heatmap-point';
 declare const HeatmapOverlay: any;
 
 @Component({
@@ -17,8 +18,8 @@ export class Map implements OnInit {
   private static readonly CITY_POINT: L.LatLngTuple = [40.71, -74];
   private static readonly CITY_ORIGINAL_ZOOM = 11;
 
-  private static readonly HEAT_MAP_MAX_INTENSITY = 1;
-  private static readonly POINTS_RADIUS = 0.001;
+  private static readonly HEAT_MAP_MAX_INTENSITY = 5;
+  private static readonly POINTS_RADIUS = 0.004;
 
   private static readonly ITINERARY_COLOR = 'blue';
   private static readonly ITINERARY_WEIGHT = 2;
@@ -36,7 +37,7 @@ export class Map implements OnInit {
   //
   
   public readonly itineraryData = input<Itinerary[]>([]);
-  public readonly heatMapData = input<{ lat: number, lng: number, count: number }[]>([]);
+  public readonly heatMapData = input<HeatmapPoint[]>([]);
 
   //
   //   Fields
@@ -81,7 +82,7 @@ export class Map implements OnInit {
 
     // If there is heat map data, add the heat map to the map
     if (this.heatMapData()) {
-      const cfg = {
+      var cfg: any = {
         radius: Map.POINTS_RADIUS,
         maxOpacity: 0.8,
         scaleRadius: true,
@@ -100,6 +101,25 @@ export class Map implements OnInit {
       };
 
       heatmapLayer.setData(testData);
+
+      const legend = new L.Control({ position: 'bottomright' });
+
+      legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'heatmap-legend');
+
+        div.innerHTML =
+          '<h2 class="legend-title">Accidents</h2>' +
+          '<div class="legend-scale">' +
+            '<span class="legend-min">0</span>' +
+            '<div class="legend-bar"></div>' +
+            '<span class="legend-max">' + Map.HEAT_MAP_MAX_INTENSITY + '</span>' +
+          '</div>';
+
+        return div;
+      };
+
+      legend.addTo(this.map);
+
     }
   }
 }

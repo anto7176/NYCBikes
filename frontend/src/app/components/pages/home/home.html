@@ -1,5 +1,11 @@
 <div id="home-container">
-    <app-map></app-map>
-    <app-upload-zone importType="accidents"></app-upload-zone>
-    <app-upload-zone importType="bikes_itinerary"></app-upload-zone>
+    @if (heatMapData().length > 0) {
+        <app-map 
+            [heatMapData]="heatMapData()"
+        />
+    } @else {
+        <i class="pi pi-spinner pi-spin"></i>
+    }
+    <app-upload-zone importType="accidents" />
+    <app-upload-zone importType="bikes_itinerary" />
 </div>
