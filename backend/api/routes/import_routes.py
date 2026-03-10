@@ -60,10 +60,16 @@ async def import_collection(
             detail="File too large, 1GB max.",
         )
 
-    start_date, end_date = await import_service.import_collection(import_type, file)
+    try:
+        start_date, end_date = await import_service.import_collection(import_type, file)
 
-    await matching_service.match_acc_bi_by_month(start_date, end_date)
+        await matching_service.match_acc_bi_by_month(start_date, end_date)
 
-    return None
+        return None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
     

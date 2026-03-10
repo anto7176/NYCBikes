@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ButtonModule } from 'primeng/button';
@@ -24,59 +24,101 @@ import { CommonModule } from '@angular/common';
   ],
 })
 export class UploadZone {
-
   //
-  //   Code imported from the PrimeNG documentation and adapted to the project but mostly raw
+  //   Interfaces
   //
   
-  private messageService = inject(MessageService);
-    files: any[] = [];
-    totalSize: number = 0;
-    totalSizePercent: number = 0;
+  private readonly messageService = inject(MessageService);
 
-    choose(event: Event, callback: () => void) {
-        callback();
-    }
+  // INPUTS
 
-    onRemoveTemplatingFile(event: any, file: any, removeFileCallback: any, index: any) {
-        removeFileCallback(event, index);
-        this.totalSize -= parseInt(this.formatSize(file.size));
-        this.totalSizePercent = this.totalSize / 10;
-    }
+  public readonly importType = input.required<string>();
 
-    onClearTemplatingUpload(clear: any) {
-        clear();
-        this.totalSize = 0;
-        this.totalSizePercent = 0;
-    }
+  //
+  //   Constants
+  //
+  
+  protected readonly MAX_FILE_SIZE = 1073741824;
 
-    onTemplatedUpload() {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-    }
+  //
+  //   Data
+  //
+  
+  protected readonly files = signal<any[]>([]);
+  protected readonly totalSize = signal<number>(0);
 
-    onSelectedFiles(event: any) {
-        this.files = event.currentFiles;
-        this.files.forEach((file) => {
-            this.totalSize += parseInt(this.formatSize(file.size));
-        });
-        this.totalSizePercent = this.totalSize / 10;
-    }
+  //
+  //   States
+  //
+  
+  protected readonly isUploading = signal<boolean>(false);
 
-    uploadEvent(callback: any) {
-        callback();
-    }
+  //
+  //   Computed
+  //
+  
+  protected readonly totalSizePercent = computed(() => {
+    return this.totalSize() / this.MAX_FILE_SIZE * 100;
+  });
 
-    formatSize(bytes: any) {
-        const k = 1024;
-        const dm = 3;
-        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-        if (bytes === 0) {
-            return `0 ${sizes[0]}`;
-        }
-        
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
-        
-        return `${formattedSize} ${sizes[i]}`;
+  //
+  //   Methods
+  //
+
+  public onRemoveTemplatingFile(event: any, file: any, removeFileCallback: any, index: any) {
+    removeFileCallback(event, index);
+
+    this.totalSize.update(
+      (totalSize) => 
+        totalSize - Number.parseInt(file.size)
+    );
+  }
+
+  public onTemplatedUpload() {
+    this.messageService.add(
+      { severity: 'success', summary: 'Success', detail: 'File Uploaded', life: 3000 }
+    );
+
+    this.totalSize.set(0);
+    this.isUploading.set(false);
+  }
+
+  public onSelectedFiles(event: any) {
+    this.files.set(event.currentFiles);
+
+    this.files().forEach((file) => {
+        this.totalSize.update(
+          (totalSize) => totalSize + Number.parseInt(file.size)
+        );
+    });
+  }
+
+  public onError(event: any) {
+    this.isUploading.set(false);
+    this.messageService.add(
+      { severity: 'error', summary: 'Unexpected error', detail: event.error.error.detail, life: 3000 }
+    );
+  }
+
+  public upload(callback: any) {
+    this.isUploading.set(true);
+    callback();
+  }
+
+  public formatSize(bytes: any) {
+    const k = 1024;
+    const dm = 3;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+    if (bytes === 0) {
+        return `0 ${sizes[0]}`;
     }
+    
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const formattedSize = Number.parseFloat(
+      (bytes / Math.pow(k, i)).toFixed(dm)
+    );
+    
+    return `${formattedSize} ${sizes[i]}`;
+  }
 }

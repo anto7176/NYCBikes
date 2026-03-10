@@ -1,0 +1,56 @@
+::ng-deep .p-fileupload {
+    width: 400px;
+    height: 400px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-evenly;
+}
+
+.uz-header {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 10px;
+}
+
+.uz-header h1 {
+    align-self: center;
+}
+
+.uz-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.uz-progressbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.uz-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.uz-empty {
+    height: 100px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
