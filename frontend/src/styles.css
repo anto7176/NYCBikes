@@ -23,6 +23,10 @@ html, body {
     border-radius: 6px;
 }
 
+.surface-without-background {
+    background-color: transparent;
+}
+
 /* Heatmap Legend */
 
 .heatmap-legend {

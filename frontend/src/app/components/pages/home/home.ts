@@ -6,6 +6,7 @@ import { HeatmapPoint } from '../../../models/heatmap-point';
 import { DatePicker } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { Chart } from '../../chart/chart';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +15,8 @@ import { FloatLabelModule } from 'primeng/floatlabel';
     UploadZone,
     DatePicker,
     FormsModule,
-    FloatLabelModule
+    FloatLabelModule,
+    Chart
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
