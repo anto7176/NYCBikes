@@ -6,7 +6,10 @@
 #   Imports
 #
 
-from fastapi import APIRouter, Depends, status
+from datetime import date
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.exceptions import HTTPException
 
 # Perso
@@ -28,13 +31,25 @@ router = APIRouter(prefix="/accidents")
 )
 async def get_accidents_heatmap(
     accidents_service: AccidentsService = Depends(get_accidents_service),
+    date_from: Annotated[
+        date | None,
+        Query(description="Start date (inclusive)"),
+    ] = None,
+    date_to: Annotated[
+        date | None,
+        Query(description="End date (inclusive)"),
+    ] = None,
 ) -> list[HeatmapPoint]:
     """
         Returns the list of accidents as heatmap points (lat, lng, count=1).
+        Optional date filter: date_from (inclusive), date_to (inclusive).
     """
 
     try:
-        return await accidents_service.get_heatmap_data()
+        return await accidents_service.get_heatmap_data(
+            date_from=date_from,
+            date_to=date_to,
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

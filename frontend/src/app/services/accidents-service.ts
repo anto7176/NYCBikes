@@ -17,7 +17,17 @@ export class AccidentsService {
   //   Methods
   //
 
-  public getHeatmapData(): Observable<HeatmapPoint[]> {
-    return this.async_http_client.get<HeatmapPoint[]>('/accidents/heatmap');
+  public getHeatmapData(dateFrom: Date | null, dateTo: Date | null): Observable<HeatmapPoint[]> {
+    const params: Record<string, any> = {};
+    if (dateFrom) {
+      params['date_from'] = dateFrom.toISOString().slice(0, 10);
+    }
+    if (dateTo) {
+      params['date_to'] = dateTo.toISOString().slice(0, 10);
+    }
+    
+    return this.async_http_client.get<HeatmapPoint[]>('/accidents/heatmap', 
+      params
+    );
   }
 }

@@ -6,6 +6,7 @@
 #   Imports
 #
 
+from datetime import date, datetime
 from typing import Any
 from pymongo import AsyncMongoClient
 
@@ -18,9 +19,9 @@ from models.heatmap_point import HeatmapPoint
 #   Constants
 #
 
-# Same field names as in import_service (accidents: LATITUDE, LONGITUDE)
 LAT_FIELD = "LATITUDE"
 LNG_FIELD = "LONGITUDE"
+STARTED_AT_FIELD = "started_at"
 
 settings = get_settings()
 
@@ -36,16 +37,34 @@ class AccidentsService:
     def __init__(self, db: AsyncMongoClient[Any]):
         self._db = db[settings.DB_NAME]
 
-    async def get_heatmap_data(self) -> list[HeatmapPoint]:
+    async def get_heatmap_data(
+        self,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> list[HeatmapPoint]:
         """
             Returns accident positions in heatmap format (lat, lng, count).
+
+            Params:
+                - date_from: Start date (inclusive). If None, no lower bound.
+                - date_to: End date (inclusive). If None, no upper bound.
 
             Returns:
                 - List of HeatmapPoint (count is always 1).
         """
 
+        query: dict[str, Any] = {}
+        if date_from is not None or date_to is not None:
+            query[STARTED_AT_FIELD] = {}
+            if date_from is not None:
+                dt_from = datetime.combine(date_from, datetime.min.time())
+                query[STARTED_AT_FIELD]["$gte"] = dt_from
+            if date_to is not None:
+                dt_to = datetime.combine(date_to, datetime.max.time())
+                query[STARTED_AT_FIELD]["$lte"] = dt_to
+
         cursor = self._db["accidents"].find(
-            {},
+            query,
             projection={LAT_FIELD: 1, LNG_FIELD: 1}
         )
 
@@ -62,5 +81,5 @@ class AccidentsService:
                 lng=float(lng),
                 count=1
             ))
-            
+        
         return result
