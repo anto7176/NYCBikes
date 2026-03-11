@@ -12,6 +12,8 @@ from db.session import get_db
 from services.accidents_services import AccidentsService
 from services.import_service import ImportService
 from services.matching_service import MatchingService
+from services.unique_itinerary_service import UniqueItineraryService
+
 
 #
 #   Dependencies
@@ -44,3 +46,12 @@ async def get_matching_service(
     """Return a MatchingService instance."""
 
     return MatchingService(db)
+
+async def get_unique_itineraries_service(
+    db: AsyncMongoClient[Any] = Depends(get_db_client)
+) -> UniqueItineraryService:
+    """Return an UniqueItineraryService instance."""
+
+    return UniqueItineraryService(db)
+
+
