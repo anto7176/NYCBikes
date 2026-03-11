@@ -45,7 +45,7 @@ class UniqueItineraryService :
         ]
 
         # Exectution de $group et $project sur la db
-        cursor = self._db["bikes_itinerary"].aggregate(pipeline)
+        cursor = await self._db["bikes_itinerary"].aggregate(pipeline)
         # Stockage des itineraire dans une liste
         raw = await cursor.to_list(length=None)
         # parcourt raw et renvoie chaque ligne au format UniqueItinerary
