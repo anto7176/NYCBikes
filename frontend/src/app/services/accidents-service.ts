@@ -19,6 +19,7 @@ export class AccidentsService {
 
   public getHeatmapData(dateFrom: Date | null, dateTo: Date | null): Observable<HeatmapPoint[]> {
     const params: Record<string, any> = {};
+    
     if (dateFrom) {
       params['date_from'] = dateFrom.toISOString().slice(0, 10);
     }

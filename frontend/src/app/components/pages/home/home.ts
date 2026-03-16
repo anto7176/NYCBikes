@@ -48,7 +48,7 @@ export class Home {
   protected readonly heatMapDataEffect = effect(() => {
 
     // Getting the heatmap data from the backend
-    return this.accidentsService.getHeatmapData(
+    this.accidentsService.getHeatmapData(
       this.dateFrom(),
       this.dateTo()
     ).subscribe(data => {
