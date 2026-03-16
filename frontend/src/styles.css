@@ -1,0 +1,68 @@
+@import "primeicons/primeicons.css";
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+
+    background-color: var(--background-color);
+}
+
+.surface {
+    width: fit-content;
+    padding: 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    background-color: var(--primary-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 6px;
+}
+
+.surface-without-background {
+    background-color: transparent;
+}
+
+/* Heatmap Legend */
+
+.heatmap-legend {
+    background: var(--primary-color);
+    padding: 6px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    font: 12px/1.2 Arial, sans-serif;
+}
+  
+.heatmap-legend .legend-title {
+    margin-top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.heatmap-legend .legend-scale {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.heatmap-legend .legend-bar {
+    width: 120px;
+    height: 10px;
+    background: linear-gradient(
+        to right,
+        #009dff 0%,
+        #00ff4c 30%,
+        #ffff00 60%,
+        #ff0000 100%
+    );
+    border-radius: 3px;
+}

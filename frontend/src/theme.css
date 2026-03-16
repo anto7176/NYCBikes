@@ -1,0 +1,8 @@
+:root {
+    --primary-color: rgb(28, 108, 141);
+    --secondary-color: rgb(18, 47, 65);
+    --tertiary-color: rgb(0, 81, 146);
+    --accent-color: white;
+
+    --background-color: var(--secondary-color);
+}

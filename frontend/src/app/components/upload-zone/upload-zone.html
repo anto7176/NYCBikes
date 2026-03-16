@@ -1,0 +1,116 @@
+<p-toast />
+
+<p-fileupload
+  name="file"
+  [url]="'http://localhost:5050/api/import/' + importType()"
+  accept=".csv"
+  [maxFileSize]="MAX_FILE_SIZE"
+  (onUpload)="onTemplatedUpload()"
+  (onSelect)="onSelectedFiles($event)"
+  (onError)="onError($event)"
+>
+  <ng-template 
+    #header
+    let-files
+    let-chooseCallback="chooseCallback"
+    let-clearCallback="clearCallback"
+    let-uploadCallback="uploadCallback"
+  >
+    <div class="uz-header">
+      <h1>Import {{ importType() }}</h1>
+      
+      <div class="uz-buttons">
+        @if (!isUploading()) {
+          <p-button
+            (onClick)="chooseCallback()"
+            icon="pi pi-file-excel"
+            [rounded]="true"
+            [outlined]="true"
+            severity="info"
+          />
+
+          <p-button
+            (onClick)="upload(uploadCallback)"
+            icon="pi pi-cloud-upload"
+            [rounded]="true"
+            [outlined]="true"
+            severity="success"
+            [disabled]="!files || files.length === 0 || totalSize() > MAX_FILE_SIZE"
+          />
+
+          <p-button
+            (onClick)="clearCallback(); totalSize.set(0);"
+            icon="pi pi-times"
+            [rounded]="true"
+            [outlined]="true"
+            severity="danger"
+            [disabled]="!files || files.length === 0"
+          />
+        } @else {
+          <i class="pi pi-spinner pi-spin"></i>
+        }
+      </div>
+      
+      <div class="uz-progressbar">
+        <div>
+          {{ (totalSize() / 1024 / 1024).toFixed(2) }}MB / {{ (MAX_FILE_SIZE / 1024 / 1024 / 1024).toFixed(2) }}GB
+        </div>
+        <p-progressbar [value]="totalSizePercent()" style="width:100%;" [showValue]="false" />
+      </div>
+    </div>
+
+  </ng-template>
+
+  <ng-template
+    #content
+    let-files
+    let-uploadedFiles="uploadedFiles"
+    let-removeFileCallback="removeFileCallback"
+    let-removeUploadedFileCallback="removeUploadedFileCallback"
+  >
+    <div class="uz-content">
+      @if (files?.length > 0) {
+        <h5>Pending (Upload around 5 mins)</h5>
+
+        @for (file of files; track file.name; let i = $index) {
+            <div class="uz-file">
+              <span>{{ file.name }}</span>
+              <div>{{ formatSize(file.size) }}</div>
+              <p-badge value="Pending" severity="warn" />
+              <p-button 
+                icon="pi pi-times"
+                (click)="onRemoveTemplatingFile($event, file, removeFileCallback, i)"
+                [outlined]="true"
+                [rounded]="true"
+                severity="danger"
+              />
+            </div>
+          }
+      } @else if (uploadedFiles?.length > 0) {
+        <h5>Completed</h5>
+
+        @for (file of uploadedFiles; track file.name; let i = $index) {
+            <div class="uz-file">
+              <span>{{ file.name }}</span>
+              <div>{{ formatSize(file.size) }}</div>
+              <p-badge value="Completed" severity="success" />
+              <p-button
+                icon="pi pi-times"
+                (onClick)="removeUploadedFileCallback(i)"
+                [outlined]="true"
+                [rounded]="true"
+                severity="danger"
+              />
+            </div>
+          }
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="uz-empty">
+      <i class="pi pi-cloud-upload"></i>
+      <p>Drag and drop files here to upload.</p>
+    </div>
+  </ng-template>
+</p-fileupload>
