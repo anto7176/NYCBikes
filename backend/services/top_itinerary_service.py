@@ -38,6 +38,8 @@ class TopItineraryService :
                         "elat": "$round_elat",
                         "elng": "$round_elng"
                     },
+                    
+                    
                     "count": {"$sum": 1},
                     "real_start_lat": {"$first": "$start_lat"},
                     "real_start_lng": {"$first": "$start_lng"},
@@ -46,17 +48,17 @@ class TopItineraryService :
                 }
             },
             
-            # 3. Tri par occurrences décroissantes
+            # Tri décroissantes
             {
                 "$sort": {"count": -1}
             },
             
-            # 4. On limite le nombre de résultats (ex: Top 10)
+            
             {
                 "$limit": limit
             },
             
-            # 5. On reformate pour matcher avec le modèle Pydantic
+            # Reformatage
             {
                 "$project": {
                     "_id": 0,
