@@ -1,11 +1,41 @@
 <div id="home-container">
-    @if (heatMapData().length > 0) {
-        <app-map 
-            [heatMapData]="heatMapData()"
-        />
-    } @else {
-        <i class="pi pi-spinner pi-spin"></i>
-    }
+
+    <h1>NYC Bikes</h1>
+
+    <div class="surface">
+
+        <div class="home-map-dates">
+            <p-floatlabel variant="on">
+                <p-datepicker
+                    [(ngModel)]="dateFrom"
+                    [iconDisplay]="'input'"
+                    [showIcon]="true"
+                    inputId="icondisplay"
+                />
+                <label for="icondisplay">Date from</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on">
+                <p-datepicker
+                    [(ngModel)]="dateTo"
+                    [iconDisplay]="'input'"
+                    [showIcon]="true"
+                    inputId="icondisplay"
+                />
+                <label for="icondisplay">Date to</label>
+            </p-floatlabel>
+        </div>
+
+        @if (heatMapData().length > 0) {
+            <app-map 
+                [heatMapData]="heatMapData()"
+            />
+        } @else {
+            <i class="pi pi-spinner pi-spin"></i>
+        }
+    </div>
+
     <app-upload-zone importType="accidents" />
+
     <app-upload-zone importType="bikes_itinerary" />
 </div>

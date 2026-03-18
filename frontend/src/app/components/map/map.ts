@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, effect, input, OnInit, signal } from '@angular/core';
 import * as L from 'leaflet';
 import { Itinerary } from '../../models/itinerary';
 import { HeatmapPoint } from '../../models/heatmap-point';
@@ -43,46 +43,26 @@ export class Map implements OnInit {
   //   Fields
   //
   
-  private map!: L.Map;
+  private readonly map = signal<L.Map | null>(null);
+  private readonly heatmapLayer = signal<typeof HeatmapOverlay | null>(null);
   
   //
   //   Init
   //
   
-  ngOnInit(): void {
-    // Initialize the map to the city point
-    this.map = L.map("map").setView(Map.CITY_POINT, Map.CITY_ORIGINAL_ZOOM);
+  public ngOnInit(): void {
+    this.map.set(L.map("map").setView(Map.CITY_POINT, Map.CITY_ORIGINAL_ZOOM));
+  
+    const map = this.map();
 
-    // Settings the default map http location and default zoom
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(this.map);
+    if (map) {
+      // Settings the default map http location and default zoom
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(map);
 
-    // If there is itinerary data, add the itinerary to the map
-    if (this.itineraryData()) {
-      this.itineraryData().forEach(itinerary => {
-
-        // Adding a ping on both ends of the itinerary
-        L.marker(itinerary.positions[0], {
-          icon: Map.PING_ICON
-        }).addTo(this.map).bindPopup(itinerary.popup_text ?? 'Start Point');
-
-        L.marker(itinerary.positions[1], {
-          icon: Map.PING_ICON
-        }).addTo(this.map).bindPopup(itinerary.popup_text ?? 'End Point');
-
-        // Adding the itinerary to the map
-        L.polyline(itinerary.positions, {
-          color: itinerary.color ?? Map.ITINERARY_COLOR,
-          weight: Map.ITINERARY_WEIGHT,
-          opacity: Map.ITINERARY_OPACITY
-        }).addTo(this.map);
-      });
-    }
-
-    // If there is heat map data, add the heat map to the map
-    if (this.heatMapData()) {
-      var cfg: any = {
+      // Setting up the heatmap layer
+      this.heatmapLayer.set(new HeatmapOverlay({
         radius: Map.POINTS_RADIUS,
         maxOpacity: 0.8,
         scaleRadius: true,
@@ -90,36 +70,74 @@ export class Map implements OnInit {
         latField: 'lat',
         lngField: 'lng',
         valueField: 'count'
-      };
+      }));
 
-      const heatmapLayer = new HeatmapOverlay(cfg);
-      heatmapLayer.addTo(this.map);
-
-      const testData = {
-        max: Map.HEAT_MAP_MAX_INTENSITY,
-        data: this.heatMapData()
-      };
-
-      heatmapLayer.setData(testData);
-
+      // Adding the legend to the map
       const legend = new L.Control({ position: 'bottomright' });
 
-      legend.onAdd = function () {
-        const div = L.DomUtil.create('div', 'heatmap-legend');
+        legend.onAdd = function () {
+          const div = L.DomUtil.create('div', 'heatmap-legend');
 
-        div.innerHTML =
-          '<h2 class="legend-title">Accidents</h2>' +
-          '<div class="legend-scale">' +
-            '<span class="legend-min">0</span>' +
-            '<div class="legend-bar"></div>' +
-            '<span class="legend-max">' + Map.HEAT_MAP_MAX_INTENSITY + '</span>' +
-          '</div>';
+          div.innerHTML =
+            '<h2 class="legend-title">Accidents</h2>' +
+            '<div class="legend-scale">' +
+              '<span class="legend-min">1</span>' +
+              '<div class="legend-bar"></div>' +
+              '<span class="legend-max">' + Map.HEAT_MAP_MAX_INTENSITY + '</span>' +
+            '</div>';
 
-        return div;
-      };
+          return div;
+        };
 
-      legend.addTo(this.map);
-
+        legend.addTo(map);
     }
   }
+  
+  //
+  //   Effect
+  //
+  
+  protected readonly heatMapDataEffect = effect(() => {
+
+    const map = this.map();
+
+    if (map) {
+      // If there is itinerary data, add the itinerary to the map
+      if (this.itineraryData()) {
+        this.itineraryData().forEach(itinerary => {
+
+          // Adding a ping on both ends of the itinerary
+          L.marker(itinerary.positions[0], {
+            icon: Map.PING_ICON
+          }).addTo(map).bindPopup(itinerary.popup_text ?? 'Start Point');
+
+          L.marker(itinerary.positions[1], {
+            icon: Map.PING_ICON
+          }).addTo(map).bindPopup(itinerary.popup_text ?? 'End Point');
+
+          // Adding the itinerary to the map
+          L.polyline(itinerary.positions, {
+            color: itinerary.color ?? Map.ITINERARY_COLOR,
+            weight: Map.ITINERARY_WEIGHT,
+            opacity: Map.ITINERARY_OPACITY
+          }).addTo(map);
+        });
+      }
+
+      const heatmapLayer = this.heatmapLayer();
+
+      // If there is heat map data, add the heat map to the map
+      if (heatmapLayer && this.heatMapData()) {
+
+        heatmapLayer.addTo(map);
+
+        const testData = {
+          max: Map.HEAT_MAP_MAX_INTENSITY,
+          data: this.heatMapData()
+        };
+
+        heatmapLayer.setData(testData);
+      }
+    }
+  });
 }
