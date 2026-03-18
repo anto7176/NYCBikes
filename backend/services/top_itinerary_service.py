@@ -19,57 +19,36 @@ class TopItineraryService :
 
     async def get_top_itineraries(self, limit: int = 10) -> list[TopItinerary]:
         pipeline = [
-
-            {
-                "$addFields": {
-                    "round_slat": {"$round": ["$start_lat", 4]},
-                    "round_slng": {"$round": ["$start_lng", 4]},
-                    "round_elat": {"$round": ["$end_lat", 4]},
-                    "round_elng": {"$round": ["$end_lng", 4]}
-                }
-            },
-            
-            # Groupage + Comptage
-            {
-                "$group": {
-                    "_id": {
-                        "slat": "$round_slat",
-                        "slng": "$round_slng",
-                        "elat": "$round_elat",
-                        "elng": "$round_elng"
-                    },
-                    
-                    
-                    "count": {"$sum": 1},
-                    "real_start_lat": {"$first": "$start_lat"},
-                    "real_start_lng": {"$first": "$start_lng"},
-                    "real_end_lat": {"$first": "$end_lat"},
-                    "real_end_lng": {"$first": "$end_lng"}
-                }
-            },
-            
-            # Tri décroissantes
-            {
-                "$sort": {"count": -1}
-            },
-            
-            
-            {
-                "$limit": limit
-            },
-            
-            # Reformatage
-            {
-                "$project": {
-                    "_id": 0,
-                    "count": 1,
-                    "start_lat": "$real_start_lat",
-                    "start_lng": "$real_start_lng",
-                    "end_lat": "$real_end_lat",
-                    "end_lng": "$real_end_lng"
-                }
+        # Groupage + Comptage
+        {
+            "$group": {
+                "_id": {
+                    "start_lat": "$start_lat",
+                    "start_lng": "$start_lng",
+                    "end_lat": "$end_lat",
+                    "end_lng": "$end_lng"
+                },
+                "count": {"$sum": 1} # Incrementation de "count" à chaque ajout dans un group
             }
-        ]
+        },
+        {
+            "$sort": {"count": -1}  # Tri decroissant
+        },
+        {
+            "$limit": limit
+        },
+        {
+            # Reformatage
+            "$project": {
+                "_id": 0,
+                "count": 1,
+                "start_lat": "$_id.start_lat",
+                "start_lng": "$_id.start_lng",
+                "end_lat": "$_id.end_lat",
+                "end_lng": "$_id.end_lng"
+            }
+        }
+    ]
 
         # Execution de l'agrégation sur la base de données
         cursor = await self._db["bikes_itinerary"].aggregate(pipeline)
