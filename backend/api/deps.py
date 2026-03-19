@@ -12,6 +12,7 @@ from db.session import get_db
 from services.accidents_services import AccidentsService
 from services.import_service import ImportService
 from services.matching_service import MatchingService
+from services.most_accidented_itinerary import MostAccidentedItineraryService
 
 #
 #   Dependencies
@@ -44,3 +45,10 @@ async def get_matching_service(
     """Return a MatchingService instance."""
 
     return MatchingService(db)
+
+async def get_mai_service(
+    db: AsyncMongoClient[Any] = Depends(get_db_client)
+) -> MostAccidentedItineraryService:
+    """Return a MostAccidentedItineraryService instance."""
+
+    return MostAccidentedItineraryService(db)

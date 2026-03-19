@@ -45,6 +45,8 @@ export class Map implements OnInit {
   
   private readonly map = signal<L.Map | null>(null);
   private readonly heatmapLayer = signal<typeof HeatmapOverlay | null>(null);
+  private markers: L.Marker[] = [];
+  private polylines: L.Polyline[] = [];
   
   //
   //   Init
@@ -97,30 +99,35 @@ export class Map implements OnInit {
   //   Effect
   //
   
-  protected readonly heatMapDataEffect = effect(() => {
+  protected readonly mapDataEffect = effect(() => {
 
     const map = this.map();
 
     if (map) {
       // If there is itinerary data, add the itinerary to the map
       if (this.itineraryData()) {
+        this.removeMarkersAndPolylines();
+
         this.itineraryData().forEach(itinerary => {
 
           // Adding a ping on both ends of the itinerary
-          L.marker(itinerary.positions[0], {
+          const startMarker = L.marker(itinerary.positions[0], {
             icon: Map.PING_ICON
           }).addTo(map).bindPopup(itinerary.popup_text ?? 'Start Point');
 
-          L.marker(itinerary.positions[1], {
+          const endMarker = L.marker(itinerary.positions[1], {
             icon: Map.PING_ICON
           }).addTo(map).bindPopup(itinerary.popup_text ?? 'End Point');
 
           // Adding the itinerary to the map
-          L.polyline(itinerary.positions, {
+          const polyline = L.polyline(itinerary.positions, {
             color: itinerary.color ?? Map.ITINERARY_COLOR,
             weight: Map.ITINERARY_WEIGHT,
             opacity: Map.ITINERARY_OPACITY
           }).addTo(map);
+
+          this.markers.push(startMarker, endMarker);
+          this.polylines.push(polyline);
         });
       }
 
@@ -140,4 +147,15 @@ export class Map implements OnInit {
       }
     }
   });
+
+  //
+  //   Methods
+  //
+  
+  private removeMarkersAndPolylines(): void {
+    this.markers.forEach(marker => marker.remove());
+    this.polylines.forEach(polyline => polyline.remove());
+    this.markers = [];
+    this.polylines = [];
+  }
 }

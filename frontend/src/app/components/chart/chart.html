@@ -1,3 +1,7 @@
-<div class="surface surface-without-background">
-    <p-chart type="bar" [data]="data()"  />
+<div id="chart-container" class="surface-no-constraints">
+    @if (data().datasets.length > 0) {
+        <p-chart type="bar" [data]="data()" [options]="basicOptions" />
+    } @else {
+        <i class="pi pi-spinner pi-spin"></i>
+    }
 </div>

@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Map } from '../../map/map';
 import { UploadZone } from '../../upload-zone/upload-zone';
 import { AccidentsService } from '../../../services/accidents-service';
@@ -7,6 +7,9 @@ import { DatePicker } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { Chart } from '../../chart/chart';
+import { MaiService } from '../../../services/mai-service';
+import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +19,9 @@ import { Chart } from '../../chart/chart';
     DatePicker,
     FormsModule,
     FloatLabelModule,
-    Chart
+    Chart,
+    SelectModule,
+    InputNumberModule,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -27,12 +32,17 @@ export class Home {
   //
 
   protected readonly accidentsService = inject(AccidentsService);
+  protected readonly maiService = inject(MaiService);
 
   //
   //   Data
   //
   
   protected readonly heatMapData = signal<HeatmapPoint[]>([]);
+  protected readonly itineraryTypes = signal<{ label: string, value: string }[]>([
+    { label: 'Bikes itinerary', value: 'bikes_itinerary' },
+    { label: 'Top n accidented itineraries', value: 'accidented_itineraries' },
+  ]);
 
   //
   //   Forms
@@ -40,6 +50,24 @@ export class Home {
   
   protected readonly dateFrom = signal<Date | null>(null);
   protected readonly dateTo = signal<Date | null>(null);
+  protected readonly selectedItineraryType = signal<string>('accidented_itineraries');
+
+  //
+  //   Computed values
+  //
+  
+  /**
+   * Gets the itineraries to display on the map according to
+   * the user selection : selectedItineraryType.
+   */
+  protected readonly itineraryData = computed(() => {
+    if (this.selectedItineraryType() === 'accidented_itineraries') {
+      return this.maiService.topNAccidentedItineraries();
+    } else if (this.selectedItineraryType() === 'bikes_itinerary') {
+      // return this.maiService.getBikesItinerary();
+    }
+    return [];
+  });
 
   //
   //   Effects

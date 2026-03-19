@@ -8,6 +8,7 @@ from fastapi import APIRouter
 
 from api.routes.accidents_routes import router as accidents_router
 from api.routes.import_routes import router as import_router
+from api.routes.most_accidented_itinerary_routes import router as mai_router
 from config.config import get_settings
 
 #
@@ -20,3 +21,4 @@ router = APIRouter(prefix=settings.APP_PREFIX)
 
 router.include_router(accidents_router)
 router.include_router(import_router)
+router.include_router(mai_router)

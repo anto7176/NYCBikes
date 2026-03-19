@@ -23,8 +23,11 @@ html, body {
     border-radius: 6px;
 }
 
-.surface-without-background {
-    background-color: transparent;
+.surface-no-constraints {
+    padding: 30px;
+
+    border: 1px solid var(--accent-color);
+    border-radius: 6px;
 }
 
 /* Heatmap Legend */

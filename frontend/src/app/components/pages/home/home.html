@@ -10,9 +10,9 @@
                     [(ngModel)]="dateFrom"
                     [iconDisplay]="'input'"
                     [showIcon]="true"
-                    inputId="icondisplay"
+                    inputId="date-from-input"
                 />
-                <label for="icondisplay">Date from</label>
+                <label for="date-from-input">Date from</label>
             </p-floatlabel>
 
             <p-floatlabel variant="on">
@@ -20,20 +20,53 @@
                     [(ngModel)]="dateTo"
                     [iconDisplay]="'input'"
                     [showIcon]="true"
-                    inputId="icondisplay"
+                    inputId="date-to-input"
                 />
-                <label for="icondisplay">Date to</label>
+                <label for="date-to-input">Date to</label>
             </p-floatlabel>
         </div>
 
         @if (heatMapData().length > 0) {
             <app-map 
                 [heatMapData]="heatMapData()"
+                [itineraryData]="itineraryData() || []"
             />
         } @else {
             <i class="pi pi-spinner pi-spin"></i>
         }
+
+        <div class="home-itinerary-type-container">
+            <p-floatlabel variant="on">
+                <p-select
+                    [(ngModel)]="selectedItineraryType"
+                    [options]="itineraryTypes()"
+                    optionLabel="label"
+                    optionValue="value"
+                    inputId="selected-itinerary-type-input"
+                />
+                <label for="selected-itinerary-type-input">Itinerary type</label>
+            </p-floatlabel>
+
+            @if (selectedItineraryType() === 'accidented_itineraries') {
+                <p-floatlabel variant="on">
+                    <p-inputnumber
+                        [ngModel]="maiService.topN()"
+                        inputId="topn-input"
+                        [min]="1"
+                        [max]="20"
+                        (onInput)="maiService.topN.set($event.value ?? 1); maiService.refresh();"
+                    />
+                    <label for="topn-input">Top n</label>
+                </p-floatlabel>
+            }
+        </div>
     </div>
+
+    @if (selectedItineraryType() === 'accidented_itineraries') {
+        <app-chart
+            [data]="maiService.topNAccidentedItinerariesChart() || { labels: [], datasets: [] }"
+        />
+    }
 
     <app-upload-zone importType="accidents" />
 

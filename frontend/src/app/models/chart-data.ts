@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const ChatDataSchema = z.object({
+export const ChartDataSchema = z.object({
   labels: z.array(z.string()),
   datasets: z.array(z.object({
     label: z.string(),
@@ -11,4 +11,4 @@ export const ChatDataSchema = z.object({
   })),
 });
 
-export type ChatData = z.infer<typeof ChatDataSchema>;
+export type ChartData = z.infer<typeof ChartDataSchema>;
