@@ -86,4 +86,23 @@ export class Home {
     });
 
   });
+
+  protected readonly datesEffect = effect(() => {
+    const df = this.dateFrom();
+    const dt = this.dateTo();
+
+    if (df && dt && df > dt) {
+      setTimeout(() => {
+        this.dateFrom.set(null);
+        this.dateTo.set(null);
+      }, 10);
+    }
+
+    this.maiService.dateFrom.set(df);
+    this.maiService.dateTo.set(dt);
+
+    setTimeout(() => {
+      this.maiService.refresh();
+    }, 16);
+  });
 }

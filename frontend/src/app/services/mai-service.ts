@@ -1,6 +1,6 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { AsyncHttpClient } from './async-http-client';
-import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
+import { BehaviorSubject, map, Observable, switchMap, tap } from 'rxjs';
 import { ChartData, ChartDataSchema } from '../models/chart-data';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Itinerary } from '../models/itinerary';
@@ -31,19 +31,45 @@ export class MaiService {
   //
   
   public readonly topN = signal<number>(5);
+  public readonly dateFrom = signal<Date | null>(null);
+  public readonly dateTo = signal<Date | null>(null);
+
+  //
+  //   Effects
+  //
+  
+  protected readonly topNEffect = effect(() => {
+    if (this.topN() < 1 || this.topN() > 20) {
+      setTimeout(() => {
+        this.topN.set(5);
+      }, 100);
+    }
+    this.refresh();
+  });
 
   //
   //   Methods
   //
 
   public getTopNAccidentedItineraries(): Observable<Itinerary[]> {
+    //
+    //   Preparing the query parameters
+    //
+    
+    const params: Record<string, any> = {
+      n: this.topN(),
+    };
+    if (this.dateFrom()) {
+      params['date_from'] = this.dateFrom()!.toISOString().slice(0, 10);
+    }
+    if (this.dateTo()) {
+      params['date_to'] = this.dateTo()!.toISOString().slice(0, 10);
+    }
 
     //
     //   Processing the received data
     //
-    return this.async_http_client.get<Itinerary[]>('/mai/topn', {
-      n: this.topN()
-    }); 
+    return this.async_http_client.get<Itinerary[]>('/mai/topn', params);
   }
 
   //

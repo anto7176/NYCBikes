@@ -4,7 +4,8 @@
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.exceptions import HTTPException
-from typing import List
+from typing import List, Optional
+from datetime import date
 
 # Perso
 
@@ -25,10 +26,12 @@ router = APIRouter(prefix="/mai")
 )
 async def get_top_n_accidented_itinerary(
     n: int = Query(default=5, description="Number of itineraries to return"),
+    date_from: Optional[date] = Query(default=None, description="Start date"),
+    date_to: Optional[date] = Query(default=None, description="End date"),
     mai_service: MostAccidentedItineraryService = Depends(get_mai_service),
 ):
     try:
-        return await mai_service.get_top_n_accidented_itinerary(n)
+        return await mai_service.get_top_n_accidented_itinerary(n, date_from, date_to)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

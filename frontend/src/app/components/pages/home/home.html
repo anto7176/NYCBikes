@@ -52,9 +52,7 @@
                     <p-inputnumber
                         [ngModel]="maiService.topN()"
                         inputId="topn-input"
-                        [min]="1"
-                        [max]="20"
-                        (onInput)="maiService.topN.set($event.value ?? 1); maiService.refresh();"
+                        (onInput)="maiService.topN.set($event.value ?? 1)"
                     />
                     <label for="topn-input">Top n</label>
                 </p-floatlabel>
