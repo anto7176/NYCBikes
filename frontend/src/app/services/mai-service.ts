@@ -33,6 +33,7 @@ export class MaiService {
   public readonly topN = signal<number>(5);
   public readonly dateFrom = signal<Date | null>(null);
   public readonly dateTo = signal<Date | null>(null);
+  public readonly bikeAccType = signal<string | null>(null);
 
   //
   //   Effects
@@ -64,6 +65,9 @@ export class MaiService {
     }
     if (this.dateTo()) {
       params['date_to'] = this.dateTo()!.toISOString().slice(0, 10);
+    }
+    if (this.bikeAccType()) {
+      params['bike_acc_type'] = this.bikeAccType();
     }
 
     //

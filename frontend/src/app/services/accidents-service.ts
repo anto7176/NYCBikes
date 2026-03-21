@@ -17,7 +17,11 @@ export class AccidentsService {
   //   Methods
   //
 
-  public getHeatmapData(dateFrom: Date | null, dateTo: Date | null): Observable<HeatmapPoint[]> {
+  public getHeatmapData(
+    dateFrom: Date | null,
+    dateTo: Date | null,
+    bikeAccType: string | null
+  ): Observable<HeatmapPoint[]> {
     const params: Record<string, any> = {};
     
     if (dateFrom) {
@@ -25,6 +29,9 @@ export class AccidentsService {
     }
     if (dateTo) {
       params['date_to'] = dateTo.toISOString().slice(0, 10);
+    }
+    if (bikeAccType) {
+      params['bike_acc_type'] = bikeAccType;
     }
     
     return this.async_http_client.get<HeatmapPoint[]>('/accidents/heatmap', 

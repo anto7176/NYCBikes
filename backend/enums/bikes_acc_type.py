@@ -9,5 +9,5 @@ from enum import Enum
 #
 
 class BikeAccType(Enum):
-    BIKE_INJURED = "bike_injured"
-    BIKE_KILLED = "bike_killed"
+    BIKES_INJURED = "bikes_injured"
+    BIKES_KILLED = "bikes_killed"

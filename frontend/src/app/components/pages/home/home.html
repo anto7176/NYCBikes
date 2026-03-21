@@ -3,6 +3,16 @@
     <h1>NYC Bikes</h1>
 
     <div class="surface">
+        <p-checkbox [(ngModel)]="bikesOnly" [binary]="true" inputId="bikes-only-checkbox" />
+        <label for="bikes-only-checkbox">Bikes only</label>
+
+        @if (bikesOnly()) {
+            <p-select [(ngModel)]="bikeAccType" [options]="BIKE_ACC_TYPES" optionLabel="label" optionValue="value" inputId="bike-acc-type-input" />
+            <label for="bike-acc-type-input">Bike accident type</label>
+        }
+    </div>
+
+    <div class="surface">
 
         <div class="home-map-dates">
             <p-floatlabel variant="on">

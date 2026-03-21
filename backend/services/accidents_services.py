@@ -67,9 +67,9 @@ class AccidentsService:
                 query[STARTED_AT_FIELD]["$lte"] = dt_to
 
         if bike_acc_type is not None:
-            if bike_acc_type == BikeAccType.BIKE_INJURED:
+            if bike_acc_type == BikeAccType.BIKES_INJURED:
                 query["NUMBER OF CYCLIST INJURED"] = 1
-            elif bike_acc_type == BikeAccType.BIKE_KILLED:
+            elif bike_acc_type == BikeAccType.BIKES_KILLED:
                 query["NUMBER OF CYCLIST KILLED"] = 1
 
         cursor = self._db["accidents"].find(

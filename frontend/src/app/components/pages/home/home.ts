@@ -10,6 +10,7 @@ import { Chart } from '../../chart/chart';
 import { MaiService } from '../../../services/mai-service';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +23,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
     Chart,
     SelectModule,
     InputNumberModule,
+    CheckboxModule,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -33,6 +35,15 @@ export class Home {
 
   protected readonly accidentsService = inject(AccidentsService);
   protected readonly maiService = inject(MaiService);
+
+  //
+  //   Constants
+  //
+  
+  protected readonly BIKE_ACC_TYPES = [
+    { label: 'Bikes Injured', value: "bikes_injured" },
+    { label: 'Bikes Killed', value: "bikes_killed" },
+  ];
 
   //
   //   Data
@@ -51,6 +62,8 @@ export class Home {
   protected readonly dateFrom = signal<Date | null>(null);
   protected readonly dateTo = signal<Date | null>(null);
   protected readonly selectedItineraryType = signal<string>('accidented_itineraries');
+  protected readonly bikesOnly = signal<boolean>(false);
+  protected readonly bikeAccType = signal<string | null>(null);
 
   //
   //   Computed values
@@ -78,7 +91,8 @@ export class Home {
     // Getting the heatmap data from the backend
     this.accidentsService.getHeatmapData(
       this.dateFrom(),
-      this.dateTo()
+      this.dateTo(),
+      this.bikeAccType()
     ).subscribe(data => {
 
       // Pushing the new data to the signal and forcing update
@@ -104,5 +118,19 @@ export class Home {
     setTimeout(() => {
       this.maiService.refresh();
     }, 16);
+  });
+
+  protected readonly bikesOnlyEffect = effect(() => {
+    if (this.bikesOnly() && !this.bikeAccType()) {
+      this.bikeAccType.set("bikes_injured");
+    }
+    
+    if (!this.bikesOnly() && this.bikeAccType()) {
+      this.bikeAccType.set(null);
+    }
+  });
+
+  protected readonly bikeAccTypeEffect = effect(() => {
+    this.maiService.bikeAccType.set(this.bikeAccType());
   });
 }

@@ -54,7 +54,7 @@ class MostAccidentedItineraryService:
 
         query: List[dict[str, Any]] = []
 
-        if date_from is not None or date_to is not None or bike_acc_type is not None:
+        if date_from is not None or date_to is not None:
 
             query.append({
                 "$match": {
@@ -65,16 +65,30 @@ class MostAccidentedItineraryService:
             # Adapts the date format to the MongoDB format
             if date_from is not None:
                 date_from = datetime.combine(date_from, datetime.min.time())
-                query[0]["$match"]["started_at"]["$gte"] = date_from
+                query[-1]["$match"]["started_at"]["$gte"] = date_from
             if date_to is not None:
                 date_to = datetime.combine(date_to, datetime.max.time())
-                query[0]["$match"]["started_at"]["$lte"] = date_to
+                query[-1]["$match"]["started_at"]["$lte"] = date_to
 
-            if bike_acc_type is not None:
-                if bike_acc_type == BikeAccType.BIKE_INJURED:
-                    query[0]["$match"]["NUMBER OF CYCLIST INJURED"] = 1
-                elif bike_acc_type == BikeAccType.BIKE_KILLED:
-                    query[0]["$match"]["NUMBER OF CYCLIST KILLED"] = 1
+
+        if bike_acc_type:
+            query.append(
+                {"$lookup" : {
+                    "from": "accidents",
+                    "localField": "accident_month_ids",
+                    "foreignField": "_id",
+                    "as": "accidents"
+                }
+            })
+
+            query.append({
+                "$match": {}
+            })
+
+            if bike_acc_type == BikeAccType.BIKES_INJURED:
+                query[-1]["$match"]["accidents.NUMBER OF CYCLIST INJURED"] = 1
+            elif bike_acc_type == BikeAccType.BIKES_KILLED:
+                query[-1]["$match"]["accidents.NUMBER OF CYCLIST KILLED"] = 1
         
         query.extend([
             {
