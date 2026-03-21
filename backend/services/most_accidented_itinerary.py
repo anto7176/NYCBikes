@@ -11,6 +11,7 @@ from pymongo import AsyncMongoClient
 
 from config.config import get_settings
 from models.itinerary import Itinerary
+from enums.bikes_acc_type import BikeAccType
 
 #
 #   MostAccidentedItineraryService
@@ -31,6 +32,7 @@ class MostAccidentedItineraryService:
         n: int = 5,
         date_from: Optional[date] = None,
         date_to: Optional[date] = None,
+        bike_acc_type: Optional[BikeAccType] = None,
     ) -> List[Itinerary]:
         """
             Returns the most accidented itineraries.
@@ -39,14 +41,20 @@ class MostAccidentedItineraryService:
                 - n: Number of itineraries to return.
                 - date_from: Start date.
                 - date_to: End date.
+                - bike_acc_type: The type of bike accident to
+                include (None then all accidents including cars).
 
             Returns:
                 - List of Itinerary.
         """
 
+        #
+        #   Preparing the query
+        #
+
         query: List[dict[str, Any]] = []
 
-        if date_from is not None or date_to is not None:
+        if date_from is not None or date_to is not None or bike_acc_type is not None:
 
             query.append({
                 "$match": {
@@ -61,6 +69,12 @@ class MostAccidentedItineraryService:
             if date_to is not None:
                 date_to = datetime.combine(date_to, datetime.max.time())
                 query[0]["$match"]["started_at"]["$lte"] = date_to
+
+            if bike_acc_type is not None:
+                if bike_acc_type == BikeAccType.BIKE_INJURED:
+                    query[0]["$match"]["NUMBER OF CYCLIST INJURED"] = 1
+                elif bike_acc_type == BikeAccType.BIKE_KILLED:
+                    query[0]["$match"]["NUMBER OF CYCLIST KILLED"] = 1
         
         query.extend([
             {
@@ -106,6 +120,10 @@ class MostAccidentedItineraryService:
                 }
             }
         ])
+
+        #
+        #   Processing the query
+        #
 
         result = await self._db["bikes_itinerary"].aggregate(query)
 

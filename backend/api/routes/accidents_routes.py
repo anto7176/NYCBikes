@@ -17,6 +17,7 @@ from fastapi.exceptions import HTTPException
 from api.deps import get_accidents_service
 from models.heatmap_point import HeatmapPoint
 from services.accidents_services import AccidentsService
+from enums.bikes_acc_type import BikeAccType
 
 #
 #   Routes
@@ -39,6 +40,10 @@ async def get_accidents_heatmap(
         date | None,
         Query(description="End date (inclusive)"),
     ] = None,
+    bike_acc_type: Annotated[
+        BikeAccType | None,
+        Query(description="The type of bike accident to include (None then all accidents including cars)"),
+    ] = None,
 ) -> list[HeatmapPoint]:
     """
         Returns the list of accidents as heatmap points (lat, lng, count=1).
@@ -49,6 +54,7 @@ async def get_accidents_heatmap(
         return await accidents_service.get_heatmap_data(
             date_from=date_from,
             date_to=date_to,
+            bike_acc_type=bike_acc_type,
         )
     except Exception as e:
         raise HTTPException(

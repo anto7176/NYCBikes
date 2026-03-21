@@ -14,6 +14,7 @@ from pymongo import AsyncMongoClient
 
 from config.config import get_settings
 from models.heatmap_point import HeatmapPoint
+from enums.bikes_acc_type import BikeAccType
 
 #
 #   Constants
@@ -41,6 +42,7 @@ class AccidentsService:
         self,
         date_from: date | None = None,
         date_to: date | None = None,
+        bike_acc_type: BikeAccType | None = None,
     ) -> list[HeatmapPoint]:
         """
             Returns accident positions in heatmap format (lat, lng, count).
@@ -48,6 +50,7 @@ class AccidentsService:
             Params:
                 - date_from: Start date (inclusive). If None, no lower bound.
                 - date_to: End date (inclusive). If None, no upper bound.
+                - bikes_only: Whether to only include bikes accidents.
 
             Returns:
                 - List of HeatmapPoint (count is always 1).
@@ -62,6 +65,12 @@ class AccidentsService:
             if date_to is not None:
                 dt_to = datetime.combine(date_to, datetime.max.time())
                 query[STARTED_AT_FIELD]["$lte"] = dt_to
+
+        if bike_acc_type is not None:
+            if bike_acc_type == BikeAccType.BIKE_INJURED:
+                query["NUMBER OF CYCLIST INJURED"] = 1
+            elif bike_acc_type == BikeAccType.BIKE_KILLED:
+                query["NUMBER OF CYCLIST KILLED"] = 1
 
         cursor = self._db["accidents"].find(
             query,

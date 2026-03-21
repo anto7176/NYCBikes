@@ -13,7 +13,7 @@ When needed to add one use poetry add <package> instead of pip install <package>
 
 ---
 
-##To run backend:
+## To run the backend:
 
 cd backend
 ./run (Because it runs uvicorn that handles fastapi)
