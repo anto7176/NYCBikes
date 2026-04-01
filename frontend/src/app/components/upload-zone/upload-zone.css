@@ -1,11 +1,50 @@
-::ng-deep .p-fileupload {
-    width: 400px;
-    height: 400px;
+:host {
+    display: block;
+    width: 100%;
+}
 
+.uz-upload-frame {
+    width: min(100%, 24rem);
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+:host ::ng-deep .uz-upload-frame > p-fileupload {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+:host ::ng-deep .uz-upload-frame .p-fileupload {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-content: space-evenly;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+
+:host ::ng-deep .uz-upload-frame .p-fileupload-header {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+:host ::ng-deep .uz-upload-frame .p-fileupload-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding-right: var(--scroll-content-gutter);
+    box-sizing: border-box;
 }
 
 .uz-header {
@@ -18,8 +57,25 @@
     gap: 10px;
 }
 
+.uz-title-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
 .uz-header h1 {
-    align-self: center;
+    margin: 0;
+}
+
+.uz-tip-icon {
+    cursor: help;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    color: var(--accent-color);
+    flex-shrink: 0;
 }
 
 .uz-buttons {
@@ -38,6 +94,14 @@
     gap: 5px;
 }
 
+.uz-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding-right: var(--scroll-content-gutter);
+    box-sizing: border-box;
+}
+
 .uz-file {
     display: flex;
     align-items: center;
@@ -46,8 +110,8 @@
 }
 
 .uz-empty {
-    height: 100px;
-
+    flex: 1 1 auto;
+    min-height: 5rem;
     display: flex;
     flex-direction: column;
     align-items: center;

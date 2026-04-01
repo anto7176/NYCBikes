@@ -11,6 +11,7 @@ import { MaiService } from '../../../services/mai-service';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     SelectModule,
     InputNumberModule,
     CheckboxModule,
+    Tooltip,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
@@ -44,6 +46,35 @@ export class Home {
     { label: 'Bikes Injured', value: "bikes_injured" },
     { label: 'Bikes Killed', value: "bikes_killed" },
   ];
+
+  protected readonly tipBikesOnly =
+    "Shows only bicycle-related accidents on the heatmap.";
+
+  protected readonly tipBikeAccType =
+    "Changing this reapplies a heavy server-side filter. The heatmap "
+    + "can take up to about 15 seconds to refresh.";
+
+  protected readonly tipDates =
+    "Narrow the window to load less data. If start is after end, "
+    + "both dates clear.";
+
+  protected readonly tipItineraryType =
+    "Switches overlays between bike itineraries and top accidented "
+    + "corridors. Each change fetches new data.";
+
+  protected readonly tipTopN =
+    "How many worst corridors to show on the map and bar chart.";
+
+  protected readonly tipHeatmapLoading =
+    "Loading heatmap points from the server. This can take a few "
+    + "seconds after a filter change.";
+
+  protected readonly tipMap =
+    "Drag to pan, scroll or +/- to zoom. Intensity follows the "
+    + "heatmap legend scale.";
+
+  protected readonly tipChart =
+    "Uses the same date range and bike filters as the heatmap.";
 
   //
   //   Data

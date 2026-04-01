@@ -1,82 +1,153 @@
-<div id="home-container">
+<div id="home-container" class="dashboard">
 
-    <h1>NYC Bikes</h1>
+    <header class="dashboard-header">
+        <h1>NYC Bikes</h1>
+        <p class="dashboard-tagline">
+            Accident heatmap, itineraries, and data import
+        </p>
+    </header>
 
-    <div class="surface">
-        <p-checkbox [(ngModel)]="bikesOnly" [binary]="true" inputId="bikes-only-checkbox" />
-        <label for="bikes-only-checkbox">Bikes only</label>
+    <div class="dashboard-body">
 
-        @if (bikesOnly()) {
-            <p-select [(ngModel)]="bikeAccType" [options]="BIKE_ACC_TYPES" optionLabel="label" optionValue="value" inputId="bike-acc-type-input" />
-            <label for="bike-acc-type-input">Bike accident type</label>
-        }
-    </div>
+        <aside class="dashboard-filters surface">
+            <div class="home-field-with-tip">
+                <p-checkbox [(ngModel)]="bikesOnly" [binary]="true" inputId="bikes-only-checkbox" />
+                <label for="bikes-only-checkbox">Bikes only</label>
+                <i
+                    class="pi pi-info-circle home-tip-icon"
+                    [pTooltip]="tipBikesOnly"
+                    tooltipEvent="hover"
+                    tooltipPosition="right"
+                ></i>
+            </div>
 
-    <div class="surface">
+            @if (bikesOnly()) {
+                <div class="home-labeled-block">
+                    <p-select [(ngModel)]="bikeAccType" [options]="BIKE_ACC_TYPES" optionLabel="label" optionValue="value" inputId="bike-acc-type-input" />
+                    <div class="home-field-with-tip home-field-with-tip--block">
+                        <label for="bike-acc-type-input">Bike accident type</label>
+                        <i
+                            class="pi pi-info-circle home-tip-icon"
+                            [pTooltip]="tipBikeAccType"
+                            tooltipEvent="hover"
+                            tooltipPosition="right"
+                        ></i>
+                    </div>
+                </div>
+            }
+        </aside>
 
-        <div class="home-map-dates">
-            <p-floatlabel variant="on">
-                <p-datepicker
-                    [(ngModel)]="dateFrom"
-                    [iconDisplay]="'input'"
-                    [showIcon]="true"
-                    inputId="date-from-input"
-                />
-                <label for="date-from-input">Date from</label>
-            </p-floatlabel>
+        <div class="dashboard-main">
 
-            <p-floatlabel variant="on">
-                <p-datepicker
-                    [(ngModel)]="dateTo"
-                    [iconDisplay]="'input'"
-                    [showIcon]="true"
-                    inputId="date-to-input"
-                />
-                <label for="date-to-input">Date to</label>
-            </p-floatlabel>
-        </div>
+            <div class="dashboard-map-chart-row">
 
-        @if (heatMapData().length > 0) {
-            <app-map 
-                [heatMapData]="heatMapData()"
-                [itineraryData]="itineraryData() || []"
-            />
-        } @else {
-            <i class="pi pi-spinner pi-spin"></i>
-        }
+            <section
+                class="dashboard-map-card surface"
+                [pTooltip]="tipMap"
+                tooltipEvent="hover"
+                tooltipPosition="bottom"
+            >
+                <div class="home-map-dates">
+                    <p-floatlabel variant="on">
+                        <p-datepicker
+                            [(ngModel)]="dateFrom"
+                            [iconDisplay]="'input'"
+                            [showIcon]="true"
+                            inputId="date-from-input"
+                        />
+                        <label for="date-from-input">Date from</label>
+                    </p-floatlabel>
 
-        <div class="home-itinerary-type-container">
-            <p-floatlabel variant="on">
-                <p-select
-                    [(ngModel)]="selectedItineraryType"
-                    [options]="itineraryTypes()"
-                    optionLabel="label"
-                    optionValue="value"
-                    inputId="selected-itinerary-type-input"
-                />
-                <label for="selected-itinerary-type-input">Itinerary type</label>
-            </p-floatlabel>
+                    <p-floatlabel variant="on">
+                        <p-datepicker
+                            [(ngModel)]="dateTo"
+                            [iconDisplay]="'input'"
+                            [showIcon]="true"
+                            inputId="date-to-input"
+                        />
+                        <label for="date-to-input">Date to</label>
+                    </p-floatlabel>
+
+                    <i
+                        class="pi pi-info-circle home-tip-icon home-tip-icon--dates"
+                        [pTooltip]="tipDates"
+                        tooltipEvent="hover"
+                        tooltipPosition="top"
+                    ></i>
+                </div>
+
+                @if (heatMapData().length > 0) {
+                    <app-map
+                        [heatMapData]="heatMapData()"
+                        [itineraryData]="itineraryData() || []"
+                    />
+                } @else {
+                    <i
+                        class="pi pi-spinner pi-spin dashboard-map-loading"
+                        [pTooltip]="tipHeatmapLoading"
+                        tooltipEvent="hover"
+                        tooltipPosition="bottom"
+                    ></i>
+                }
+
+                <div class="home-itinerary-type-container">
+                    <p-floatlabel variant="on">
+                        <p-select
+                            [(ngModel)]="selectedItineraryType"
+                            [options]="itineraryTypes()"
+                            optionLabel="label"
+                            optionValue="value"
+                            inputId="selected-itinerary-type-input"
+                        />
+                        <label for="selected-itinerary-type-input">Itinerary type</label>
+                    </p-floatlabel>
+
+                    <i
+                        class="pi pi-info-circle home-tip-icon home-tip-icon--inline"
+                        [pTooltip]="tipItineraryType"
+                        tooltipEvent="hover"
+                        tooltipPosition="top"
+                    ></i>
+
+                    @if (selectedItineraryType() === 'accidented_itineraries') {
+                        <p-floatlabel variant="on">
+                            <p-inputnumber
+                                [ngModel]="maiService.topN()"
+                                inputId="topn-input"
+                                (onInput)="maiService.topN.set($event.value ?? 1)"
+                            />
+                            <label for="topn-input">Top n</label>
+                        </p-floatlabel>
+
+                        <i
+                            class="pi pi-info-circle home-tip-icon home-tip-icon--inline"
+                            [pTooltip]="tipTopN"
+                            tooltipEvent="hover"
+                            tooltipPosition="top"
+                        ></i>
+                    }
+                </div>
+            </section>
 
             @if (selectedItineraryType() === 'accidented_itineraries') {
-                <p-floatlabel variant="on">
-                    <p-inputnumber
-                        [ngModel]="maiService.topN()"
-                        inputId="topn-input"
-                        (onInput)="maiService.topN.set($event.value ?? 1)"
+                <section class="dashboard-chart-slot">
+                    <app-chart
+                        [chartHint]="tipChart"
+                        [data]="maiService.topNAccidentedItinerariesChart() || { labels: [], datasets: [] }"
                     />
-                    <label for="topn-input">Top n</label>
-                </p-floatlabel>
+                </section>
             }
+
+            </div>
+        </div>
+
+        <div class="dashboard-imports">
+            <div class="dashboard-import-card surface">
+                <app-upload-zone importType="accidents" />
+            </div>
+            <div class="dashboard-import-card surface">
+                <app-upload-zone importType="bikes_itinerary" />
+            </div>
         </div>
     </div>
-
-    @if (selectedItineraryType() === 'accidented_itineraries') {
-        <app-chart
-            [data]="maiService.topNAccidentedItinerariesChart() || { labels: [], datasets: [] }"
-        />
-    }
-
-    <app-upload-zone importType="accidents" />
-
-    <app-upload-zone importType="bikes_itinerary" />
 </div>

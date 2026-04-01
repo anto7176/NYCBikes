@@ -1,11 +1,13 @@
 import { Component, input } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
+import { Tooltip } from 'primeng/tooltip';
 import { ChartData } from '../../models/chart-data';
 
 @Component({
   selector: 'app-chart',
   imports: [
-    ChartModule
+    ChartModule,
+    Tooltip,
   ],
   templateUrl: './chart.html',
   styleUrl: './chart.css',
@@ -16,6 +18,8 @@ export class Chart {
   //
   
   public readonly data = input.required<ChartData>();
+
+  public readonly chartHint = input<string>('');
 
   public readonly basicOptions = {
     maintainAspectRatio: false,

@@ -7,9 +7,7 @@
 import asyncio
 from datetime import date, datetime, timedelta, time
 
-from config.config import get_settings
-from db.session import get_db
-from services.api_import_service import ApiImportService
+from backend.config.config import get_settings
 
 settings = get_settings()
 
@@ -31,8 +29,8 @@ async def import_job_once() -> None:
         start_date.replace(day=28) + timedelta(days=4)
     ).replace(day=1)
 
-    service = ApiImportService(get_db())
-    await service.import_from_apis(
+    service = ApiImportService(get_db()) # type: ignore
+    await service.import_from_apis( # type: ignore
         start_date=start_date,
         end_date=first_of_next_month,
     )

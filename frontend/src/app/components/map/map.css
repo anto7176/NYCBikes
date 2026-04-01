@@ -1,1 +1,21 @@
-  
+:host {
+    display: block;
+    width: 100%;
+}
+
+#map-container {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#map {
+    width: 100%;
+    max-width: 31.25rem;
+    height: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}

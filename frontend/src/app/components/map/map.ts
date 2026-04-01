@@ -1,4 +1,11 @@
-import { Component, effect, input, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import * as L from 'leaflet';
 import { Itinerary } from '../../models/itinerary';
 import { HeatmapPoint } from '../../models/heatmap-point';
@@ -10,7 +17,7 @@ declare const HeatmapOverlay: any;
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
-export class Map implements OnInit {
+export class Map implements OnInit, AfterViewInit {
   //
   //   Constants
   //
@@ -93,6 +100,15 @@ export class Map implements OnInit {
 
         legend.addTo(map);
     }
+  }
+
+  public ngAfterViewInit(): void {
+    setTimeout(() => {
+      const m = this.map();
+      if (m) {
+        m.invalidateSize();
+      }
+    }, 0);
   }
   
   //

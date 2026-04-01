@@ -1,3 +1,47 @@
-#chart-container {
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+}
+
+#chart-container.chart-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     color: white !important;
+}
+
+.chart-panel-head {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 0.35rem;
+}
+
+.chart-tip-icon {
+    cursor: help;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    color: var(--accent-color);
+}
+
+.chart-panel-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chart-panel-body ::ng-deep .p-chart {
+    flex: 1 1 auto;
+    min-height: 12rem;
+    position: relative;
 }

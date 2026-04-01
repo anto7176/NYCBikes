@@ -5,4 +5,11 @@
     --accent-color: white;
 
     --background-color: var(--secondary-color);
+
+    --dashboard-gap: 1rem;
+    --dashboard-rail: min(17.5rem, 32vw);
+    --dashboard-header-bg: var(--tertiary-color);
+    --dashboard-header-accent: var(--primary-color);
+
+    --scroll-content-gutter: 0.65rem;
 }

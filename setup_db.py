@@ -45,6 +45,10 @@ coll_bi.create_index({
 coll_acc.drop_indexes()
 
 coll_acc.create_index({
+    "_id": ASCENDING,
+})
+
+coll_acc.create_index({
     "started_at": ASCENDING,
     "position": "2dsphere",
 }, unique=True)

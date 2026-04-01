@@ -1,11 +1,21 @@
 @import "primeicons/primeicons.css";
 
+html {
+    scrollbar-gutter: stable;
+}
+
 html, body {
-    width: 100vw;
-    height: 100vh;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
     margin: 0;
 
     background-color: var(--background-color);
+}
+
+body {
+    padding-right: var(--scroll-content-gutter);
 }
 
 .surface {

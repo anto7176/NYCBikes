@@ -6,6 +6,7 @@ import { BadgeModule } from 'primeng/badge';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-upload-zone',
@@ -16,6 +17,7 @@ import { CommonModule } from '@angular/common';
     BadgeModule,
     ProgressBarModule,
     CommonModule,
+    Tooltip,
   ],
   templateUrl: './upload-zone.html',
   styleUrl: './upload-zone.css',
@@ -59,6 +61,19 @@ export class UploadZone {
   
   protected readonly totalSizePercent = computed(() => {
     return this.totalSize() / this.MAX_FILE_SIZE * 100;
+  });
+
+  protected readonly tipUpload = computed(() => {
+    if (this.importType() === "accidents") {
+      return (
+        "Large accident CSV files can take several minutes. "
+        + "Only .csv is accepted."
+      );
+    }
+    return (
+      "Large itinerary CSV files can take several minutes. "
+      + "Only .csv is accepted."
+    );
   });
 
   //

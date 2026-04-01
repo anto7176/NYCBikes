@@ -1,5 +1,6 @@
 <p-toast />
 
+<div class="uz-upload-frame">
 <p-fileupload
   name="file"
   [url]="'http://localhost:5050/api/import/' + importType()"
@@ -17,8 +18,16 @@
     let-uploadCallback="uploadCallback"
   >
     <div class="uz-header">
-      <h1>Import {{ importType() }}</h1>
-      
+      <div class="uz-title-row">
+        <h1>Import {{ importType() }}</h1>
+        <i
+          class="pi pi-info-circle uz-tip-icon"
+          [pTooltip]="tipUpload()"
+          tooltipEvent="hover"
+          tooltipPosition="bottom"
+        ></i>
+      </div>
+
       <div class="uz-buttons">
         @if (!isUploading()) {
           <p-button
@@ -114,3 +123,4 @@
     </div>
   </ng-template>
 </p-fileupload>
+</div>
