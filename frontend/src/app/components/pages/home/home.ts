@@ -12,6 +12,8 @@ import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Tooltip } from 'primeng/tooltip';
+import { ItinerariesService } from '../../../services/itineraries-service';
+
 
 @Component({
   selector: 'app-home',
@@ -37,6 +39,7 @@ export class Home {
 
   protected readonly accidentsService = inject(AccidentsService);
   protected readonly maiService = inject(MaiService);
+  protected readonly itinerariesService = inject(ItinerariesService);
 
   //
   //   Constants
@@ -84,6 +87,7 @@ export class Home {
   protected readonly itineraryTypes = signal<{ label: string, value: string }[]>([
     { label: 'Bikes itinerary', value: 'bikes_itinerary' },
     { label: 'Top n accidented itineraries', value: 'accidented_itineraries' },
+    { label: 'Top itineraries', value: 'top_itineraries' }, 
   ]);
 
   //
@@ -109,9 +113,12 @@ export class Home {
       return this.maiService.topNAccidentedItineraries();
     } else if (this.selectedItineraryType() === 'bikes_itinerary') {
       // return this.maiService.getBikesItinerary();
+    } else if (this.selectedItineraryType() === 'top_itineraries') {
+      return this.itinerariesService.topItineraries(); // <-- ajout
     }
     return [];
   });
+
 
   //
   //   Effects
