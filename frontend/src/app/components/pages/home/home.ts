@@ -85,7 +85,6 @@ export class Home {
   
   protected readonly heatMapData = signal<HeatmapPoint[]>([]);
   protected readonly itineraryTypes = signal<{ label: string, value: string }[]>([
-    { label: 'Bikes itinerary', value: 'bikes_itinerary' },
     { label: 'Top n accidented itineraries', value: 'accidented_itineraries' },
     { label: 'Top itineraries', value: 'top_itineraries' }, 
   ]);
@@ -96,7 +95,7 @@ export class Home {
   
   protected readonly dateFrom = signal<Date | null>(null);
   protected readonly dateTo = signal<Date | null>(null);
-  protected readonly selectedItineraryType = signal<string>('accidented_itineraries');
+  protected readonly selectedItineraryType = signal<string>('top_itineraries');
   protected readonly bikesOnly = signal<boolean>(false);
   protected readonly bikeAccType = signal<string | null>(null);
 
@@ -111,10 +110,8 @@ export class Home {
   protected readonly itineraryData = computed(() => {
     if (this.selectedItineraryType() === 'accidented_itineraries') {
       return this.maiService.topNAccidentedItineraries();
-    } else if (this.selectedItineraryType() === 'bikes_itinerary') {
-      // return this.maiService.getBikesItinerary();
     } else if (this.selectedItineraryType() === 'top_itineraries') {
-      return this.itinerariesService.topItineraries(); // <-- ajout
+      return this.itinerariesService.topItineraries();
     }
     return [];
   });
